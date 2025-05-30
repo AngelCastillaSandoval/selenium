@@ -1,0 +1,732 @@
+<div *ngIf="isVisible" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+        <!-- Overlay de fondo minimalista -->
+        <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity duration-300" aria-hidden="true"
+            (click)="closeModal()"></div>
+
+        <!-- Modal panel con diseño limpio -->
+        <div
+            class="relative w-full max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[95vh] bg-white dark:bg-gray-800 rounded-xl shadow-2xl transform transition-all duration-300 ease-out animate-modal-enter overflow-hidden border border-gray-200 dark:border-gray-700">
+
+            <!-- Encabezado con gradiente colorido -->
+            <div
+                class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-700 dark:via-purple-700 dark:to-indigo-700 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                <div class="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5"></div>
+                <div class="relative flex items-center justify-between">
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg sm:text-xl font-bold text-white drop-shadow-md">
+                                {{ isEditMode ? 'Editar Reporte' : 'Nuevo Reporte' }}
+                            </h2>
+                            <p class="text-sm text-white/80 mt-1">
+                                {{ isEditMode ? 'Modifica la información del reporte' : 'Completa los datos del reporte'
+                                }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Botón de cerrar -->
+                    <button type="button" (click)="closeModal()"
+                        class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-2 transition-all duration-300 transform hover:scale-110">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenido del modal -->
+            <div class="overflow-y-auto max-h-[calc(95vh-120px)] custom-scrollbar">
+                <form [formGroup]="reportForm" (ngSubmit)="saveReport()">
+                    <div class="bg-white dark:bg-gray-800 px-3 sm:px-4 lg:px-6 xl:px-8 pt-4 sm:pt-6 pb-4">
+                        <div class="w-full space-y-6">
+
+                            <!-- Datos generales del reporte -->
+                            <div
+                                class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-2 mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Información General
+                                    </h3>
+                                </div>
+
+                                <!-- Notificación de duplicidad -->
+                                <div *ngIf="isDuplicateReport"
+                                    class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <h3 class="text-sm font-semibold text-red-800 dark:text-red-300">Reporte
+                                                Duplicado</h3>
+                                            <div class="mt-2 text-sm text-red-700 dark:text-red-400">
+                                                <p>Ya existe un reporte para el año {{ reportForm.get('year')?.value }}
+                                                    y trimestre {{ reportForm.get('trimester')?.value }}.</p>
+                                                <p class="mt-1 font-medium">Cambia el año o trimestre para continuar.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Indicador de verificación -->
+                                <div *ngIf="isCheckingDuplicate"
+                                    class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center">
+                                    <svg class="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400 mr-3" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-blue-600 dark:text-blue-400 text-sm">Verificando
+                                        duplicidad...</span>
+                                </div>
+
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <!-- Campo Año -->
+                                    <div class="space-y-2">
+                                        <label for="year"
+                                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Año <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="number" id="year" formControlName="year" [min]="minYear"
+                                            [max]="maxYear" placeholder="Ej: 2024"
+                                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                                            [ngClass]="{'border-red-500 dark:border-red-400': isDuplicateReport || (reportForm.get('year')?.invalid && reportForm.get('year')?.touched)}">
+
+                                        <!-- Mensajes de error -->
+                                        <div *ngIf="reportForm.get('year')?.invalid && reportForm.get('year')?.touched"
+                                            class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-start animate-shake">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                class="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ getYearErrorMessage() }}</span>
+                                        </div>
+
+                                        <!-- Ayuda -->
+                                        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            Rango permitido: {{ minYear }} - {{ maxYear }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Campo Trimestre -->
+                                    <div class="space-y-2">
+                                        <label for="trimester"
+                                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Trimestre <span class="text-red-500">*</span>
+                                        </label>
+                                        <select id="trimester" formControlName="trimester"
+                                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                                            [ngClass]="{'border-red-500 dark:border-red-400': isDuplicateReport || (reportForm.get('trimester')?.invalid && reportForm.get('trimester')?.touched)}">
+                                            <option [ngValue]="null">Seleccione trimestre</option>
+                                            <option value="Enero-Marzo">Enero-Marzo</option>
+                                            <option value="Abril-Junio">Abril-Junio</option>
+                                            <option value="Julio-Septiembre">Julio-Septiembre</option>
+                                            <option value="Octubre-Diciembre">Octubre-Diciembre</option>
+                                        </select>
+
+                                        <div *ngIf="reportForm.get('trimester')?.invalid && reportForm.get('trimester')?.touched"
+                                            class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center animate-shake">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 flex-shrink-0"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            El trimestre es requerido
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campo Descripción -->
+                            <div
+                                class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-2 mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Descripción del
+                                            Reporte</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Se guardará como archivo
+                                            HTML</p>
+                                    </div>
+                                </div>
+
+                                <label for="description"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Contenido <span class="text-red-500">*</span>
+                                </label>
+
+                                <!-- Indicador de carga -->
+                                <div *ngIf="isLoadingDescription"
+                                    class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center">
+                                    <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400 mr-3" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-blue-600 dark:text-blue-400 text-sm">Cargando contenido...</span>
+                                </div>
+
+                                <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                                    <quill-editor formControlName="description" [modules]="{
+                                        toolbar: [
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            [{ 'header': [1, 2, 3, false] }],
+                                            [{ list: 'ordered' }, { list: 'bullet' }],
+                                            [{ 'color': [] }, { 'background': [] }],
+                                            [{ 'align': [] }],
+                                            ['link', 'image'],
+                                            ['clean']
+                                        ]
+                                    }" [styles]="{height: '200px'}" class="bg-white dark:bg-gray-700">
+                                    </quill-editor>
+                                </div>
+
+                                <div *ngIf="reportForm.get('description')?.invalid && reportForm.get('description')?.touched"
+                                    class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center animate-shake">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 flex-shrink-0"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    La descripción es requerida
+                                </div>
+                            </div>
+
+                            <!-- Campo Cronograma - Solo para Enero-Marzo -->
+                            <div *ngIf="shouldShowSchedule()"
+                                class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-center mb-4">
+                                    <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-2 mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Cronograma</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Solo para primer trimestre
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <label for="schedule"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Imagen del Cronograma
+                                </label>
+
+                                <div
+                                    class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                                    <input type="file" id="schedule" (change)="onScheduleFileChange($event)"
+                                        accept="image/*"
+                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70 transition-colors cursor-pointer">
+
+                                    <!-- Vista previa del cronograma -->
+                                    <div *ngIf="scheduleFileName"
+                                        class="mt-4 border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                        (click)="viewSchedule()">
+                                        <div class="flex items-center">
+                                            <div class="bg-gray-200 dark:bg-gray-600 p-2 rounded-lg mr-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-6 w-6 text-gray-600 dark:text-gray-300" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                                                    scheduleFileName }}</span>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Click para
+                                                    previsualizar</p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                            Ver
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de talleres -->
+                            <div
+                                class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                                <div
+                                    class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-3 sm:space-y-0">
+                                    <div class="flex items-center">
+                                        <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-2 mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Talleres del
+                                                Reporte</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Agrega los talleres
+                                                realizados</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" (click)="addWorkshop()"
+                                        class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-sm flex items-center justify-center hover:bg-blue-700 transition-colors font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Agregar Taller
+                                    </button>
+                                </div>
+
+                                <div formArrayName="workshops"
+                                    class="max-h-[500px] overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                                    <div *ngFor="let workshop of workshopsArray.controls; let i = index"
+                                        [formGroupName]="i"
+                                        class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800 workshop-item hover:shadow-md transition-all duration-200">
+
+                                        <!-- Header del taller -->
+                                        <div class="flex justify-between items-center mb-4">
+                                            <div class="flex items-center">
+                                                <span
+                                                    class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">
+                                                    {{ i + 1 }}
+                                                </span>
+                                                <div>
+                                                    <h5 class="text-base font-semibold text-gray-900 dark:text-white">
+                                                        Taller #{{ i + 1 }}</h5>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">Completa la
+                                                        información</p>
+                                                </div>
+                                            </div>
+                                            <button type="button" (click)="removeWorkshop(i)"
+                                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                            <!-- Nombre del taller -->
+                                            <div class="relative lg:col-span-2">
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Nombre del Taller <span class="text-red-500">*</span>
+                                                </label>
+
+                                                <input type="text" formControlName="workshopName"
+                                                    (input)="onWorkshopNameInput(i)"
+                                                    (blur)="onWorkshopNameBlur(i); hideAutocompleteDelayed(i)"
+                                                    (focus)="onWorkshopNameInput(i)"
+                                                    placeholder="Escriba el nombre del taller..."
+                                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200">
+
+                                                <!-- Lista de sugerencias -->
+                                                <ul *ngIf="workshopSuggestions[i]?.length && showSuggestions[i]"
+                                                    class="absolute z-20 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 w-full mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    <li *ngFor="let suggestion of workshopSuggestions[i]"
+                                                        (mousedown)="selectWorkshopSuggestion(i, suggestion)"
+                                                        class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer text-gray-900 dark:text-white transition-colors border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                                                        <div class="font-medium">{{ suggestion.name }}</div>
+                                                        <div
+                                                            class="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            {{ formatDate(suggestion.dateStart) }} - {{
+                                                            formatDate(suggestion.dateEnd) }}
+                                                        </div>
+                                                    </li>
+                                                </ul>
+
+                                                <div *ngIf="workshop.get('workshopName')?.invalid && workshop.get('workshopName')?.touched"
+                                                    class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center animate-shake">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4 mr-2 flex-shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    El nombre del taller es requerido
+                                                </div>
+                                            </div>
+
+                                            <!-- Descripción del taller -->
+                                            <div class="lg:col-span-2">
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Descripción del Taller
+                                                </label>
+                                                <textarea formControlName="description" rows="3"
+                                                    placeholder="Describe brevemente el contenido y objetivos del taller..."
+                                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 resize-none"></textarea>
+                                            </div>
+
+                                            <!-- Fechas del taller -->
+                                            <div class="space-y-2">
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Fecha Inicio <span class="text-red-500">*</span>
+                                                </label>
+                                                <input type="date" formControlName="workshopDateStart"
+                                                    (change)="validateWorkshopDates(i)"
+                                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200">
+
+                                                <div *ngIf="workshop.get('workshopDateStart')?.invalid && workshop.get('workshopDateStart')?.touched"
+                                                    class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4 mr-2 flex-shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    La fecha de inicio es requerida
+                                                </div>
+
+                                                <div *ngIf="workshop.get('workshopDateStart')?.value"
+                                                    class="mt-2 text-sm text-blue-600 dark:text-blue-400">
+                                                    {{ formatDate(workshop.get('workshopDateStart')?.value) }}
+                                                </div>
+                                            </div>
+
+                                            <div class="space-y-2">
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Fecha Fin <span class="text-red-500">*</span>
+                                                </label>
+                                                <input type="date" formControlName="workshopDateEnd"
+                                                    (change)="validateWorkshopDates(i)"
+                                                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200">
+
+                                                <div *ngIf="workshop.get('workshopDateEnd')?.invalid && workshop.get('workshopDateEnd')?.touched"
+                                                    class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4 mr-2 flex-shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    La fecha de fin es requerida
+                                                </div>
+
+                                                <!-- Error de rango de fechas -->
+                                                <div *ngIf="workshop.errors?.['invalidDateRange'] && workshop.get('workshopDateStart')?.value && workshop.get('workshopDateEnd')?.value"
+                                                    class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4 mr-2 flex-shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    La fecha de fin debe ser posterior a la fecha de inicio
+                                                </div>
+
+                                                <div *ngIf="workshop.get('workshopDateEnd')?.value"
+                                                    class="mt-2 text-sm text-blue-600 dark:text-blue-400">
+                                                    {{ formatDate(workshop.get('workshopDateEnd')?.value) }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Imágenes del taller -->
+                                            <div class="lg:col-span-2">
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Imágenes del Taller <span class="text-red-500">*</span>
+                                                </label>
+
+                                                <div
+                                                    class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 bg-white dark:bg-gray-700">
+                                                    <div class="text-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="mx-auto h-10 w-10 text-gray-400 mb-2" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                        </svg>
+                                                        <input type="file" multiple accept="image/*"
+                                                            (change)="onImageFileChange($event, i)"
+                                                            class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70 transition-colors cursor-pointer">
+                                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                            Arrastra archivos o haz clic</p>
+                                                    </div>
+
+                                                    <div
+                                                        class="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 text-red-600 dark:text-red-400 text-sm flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4 mr-2 flex-shrink-0" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        Se requiere al menos una imagen por taller
+                                                    </div>
+                                                </div>
+
+                                                <!-- Previsualización de imágenes -->
+                                                <div *ngIf="workshopImages[i] && workshopImages[i].length > 0"
+                                                    class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                                    <div *ngFor="let image of workshopImages[i]; let imgIndex = index"
+                                                        class="relative group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200 cursor-pointer"
+                                                        (click)="openImageViewer(i, imgIndex)">
+
+                                                        <!-- Botón eliminar -->
+                                                        <button type="button"
+                                                            (click)="removeImage(i, imgIndex); $event.stopPropagation()"
+                                                            class="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+
+                                                        <!-- Imagen -->
+                                                        <div class="aspect-square w-full">
+                                                            <img [src]="image.preview" [alt]="image.name"
+                                                                class="w-full h-full object-cover">
+                                                        </div>
+
+                                                        <!-- Overlay con información -->
+                                                        <div
+                                                            class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                                                            <div class="flex items-center text-white">
+                                                                <div class="bg-blue-500 p-1 rounded mr-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                        class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                                                        stroke="currentColor">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span class="text-xs font-medium truncate">{{ image.name
+                                                                    }}</span>
+                                                            </div>
+                                                            <div class="text-xs text-gray-200 mt-1">Click para ampliar
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mensaje cuando no hay talleres -->
+                                    <div *ngIf="workshopsArray.length === 0"
+                                        class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                        <div
+                                            class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-lg font-semibold mb-2">No hay talleres agregados</h3>
+                                        <p class="text-sm mb-4">Haga clic en "Agregar Taller" para comenzar a crear su
+                                            reporte.</p>
+                                        <div class="text-xs text-gray-400">Los talleres son requeridos</div>
+                                    </div>
+                                </div>
+
+                                <!-- Botón para agregar más talleres -->
+                                <div *ngIf="workshopsArray.length > 0" class="flex justify-center mt-4">
+                                    <button type="button" (click)="addWorkshop()"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center transition-colors hover:bg-blue-700 font-medium text-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Agregar Otro Taller
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción con gradiente colorido -->
+                    <div
+                        class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-700 dark:via-purple-700 dark:to-indigo-700 px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                        <button type="button" (click)="closeModal()"
+                            class="w-full sm:w-auto inline-flex justify-center items-center rounded-lg border border-white/30 px-4 py-2 bg-white/20 backdrop-blur-sm text-sm font-medium text-white hover:bg-white/30 transition-all duration-300 transform hover:scale-105">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancelar
+                        </button>
+
+                        <button type="submit" [disabled]="reportForm.invalid || isSubmitting"
+                            class="w-full sm:w-auto inline-flex justify-center items-center rounded-lg border border-transparent px-4 py-2 bg-white text-blue-600 hover:bg-gray-100 text-sm font-bold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            [ngClass]="{'opacity-50 cursor-not-allowed': reportForm.invalid || isSubmitting}">
+                            <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <svg *ngIf="!isSubmitting" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                            {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar Reporte' : 'Guardar Reporte')
+                            }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales de visualización -->
+<!-- Modal de visualización de imágenes -->
+<div *ngIf="showImageViewer" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="image-viewer" role="dialog"
+    aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center">
+        <!-- Overlay de fondo -->
+        <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity duration-300" aria-hidden="true"
+            (click)="closeImageViewer()"></div>
+
+        <!-- Contenido del visor -->
+        <div class="relative inline-block max-w-full w-full sm:max-w-6xl z-10">
+            <button type="button" (click)="closeImageViewer()"
+                class="absolute top-4 right-4 text-white z-20 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="relative">
+                <img [src]="currentImageUrl" alt="Imagen ampliada" class="max-h-[85vh] mx-auto rounded-lg shadow-2xl">
+
+                <!-- Controles de navegación -->
+                <div class="absolute inset-0 flex items-center justify-between px-4">
+                    <button *ngIf="currentImageIndex > 0" type="button" (click)="prevImage()"
+                        class="bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button *ngIf="currentImageIndex < currentWorkshopImages.length - 1" type="button"
+                        (click)="nextImage()"
+                        class="bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Miniaturas -->
+            <div class="mt-6 flex justify-center space-x-2 overflow-x-auto pb-4 custom-scrollbar">
+                <button *ngFor="let image of currentWorkshopImages; let i = index" type="button" (click)="viewImage(i)"
+                    class="h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 border-2"
+                    [ngClass]="{'border-blue-500': currentImageIndex === i, 'border-gray-300 dark:border-gray-600': currentImageIndex !== i}">
+                    <img [src]="image.preview" alt="Miniatura" class="h-full w-full object-cover">
+                </button>
+            </div>
+
+            <!-- Contador de imágenes -->
+            <div class="mt-4 text-center">
+                <span class="bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    {{ currentImageIndex + 1 }} de {{ currentWorkshopImages.length }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de visualización del cronograma -->
+<div *ngIf="showScheduleViewer" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="schedule-viewer"
+    role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center">
+        <!-- Overlay de fondo -->
+        <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity duration-300" aria-hidden="true"
+            (click)="closeScheduleViewer()"></div>
+
+        <!-- Contenido del visor -->
+        <div class="relative inline-block max-w-full w-full sm:max-w-6xl z-10">
+            <button type="button" (click)="closeScheduleViewer()"
+                class="absolute top-4 right-4 text-white z-20 bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="relative">
+                <img [src]="schedulePreview" alt="Cronograma" class="max-h-[85vh] mx-auto rounded-lg shadow-2xl">
+            </div>
+
+            <!-- Título del cronograma -->
+            <div class="mt-4 text-center">
+                <span class="bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    Cronograma del Reporte
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
